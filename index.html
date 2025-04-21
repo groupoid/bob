@@ -83,7 +83,7 @@ Let (x, t, u) → subst x t u        (* Підстановка *)</code><br><p s
         let acc' = find_redexes env t acc in
         find_redexes env u acc'
     | Swap t -> find_redexes env t acc
-    | Var _ | Unit -> acc</code><br><h2>Паралельна оцінка</h2><p>Паралельна оцінка використовує бібліотеку Domainslib для одночасної обробки активних пар.</p><code>let eval_parallel pool env term =
+    | Var _ | Unit -> acc</code><br><h2>Паралельна редукція</h2><p>Паралельна редукція використовує бібліотеку domainslib для одночасної обробки активних пар.</p><code>let eval_parallel pool env term =
     let rec loop term =
         let redexes = find_redexes env term [] in
         if redexes = [] then term
