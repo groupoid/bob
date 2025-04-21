@@ -124,6 +124,20 @@ let rec pp_term = function
   | Let (x, t, u) -> "let " ^ x ^ " = " ^ pp_term t ^ " in " ^ pp_term u
   | Unit -> "()"
 
+(* Lambda abstraction: λx.t *)
+let lambda x t = Con (Let (x, Var x, t))
+
+(* Application: (λx.t') u *)
+let apply t u =
+  match t with
+  | Con (Let (x, Var x', t')) when x = x' -> Con (Let (x, u, t'))
+  | _ -> Con (Pair (t, u)) (* Fallback for non-lambda terms *)
+
+(* Example: (λx.x) y *)
+let y = Var "y"
+let id = lambda "x" (Var "x")
+let app = apply id y
+
 (* Test the parallel evaluator *)
 let () =
   let pool = Task.setup_pool ~num_domains:(Domain.recommended_domain_count ()) () in
@@ -152,4 +166,8 @@ let () =
   (* Test 8: Cyclic net, no reduction expected *)
   let test8 = Pair (Var "x", Pair (Var "y", Var "x")) in
   Printf.printf "Test 8: %s -> %s\n" (pp_term test8) (pp_term (eval_parallel pool env test8));
+  let test9 = id in
+  Printf.printf "Test 9: %s -> %s\n" (pp_term test9) (pp_term (eval_parallel pool env test9));
+  let test10 = app in
+  Printf.printf "Test 10: %s -> %s\n" (pp_term test10) (pp_term (eval_parallel pool env test10));
   Task.teardown_pool pool
