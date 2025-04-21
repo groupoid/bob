@@ -1,0 +1,199 @@
+include header
+
+html
+    head
+        meta(property='og:title'       content='Bob')
+        meta(property='og:description' content='Внутрішня мова симетричних моноїдальних категорій')
+        meta(property='og:url'         content='https://bob.groupoid.space/')
+
+block title
+    title BOB
+
+block content
+    +header('', 'Bob', 'Мінімальна мова для паралельних обчислень у симетричних моноїдальних категоріях')
+    article.main
+        .exe
+            section
+                h1 Анотація
+            aside Намдак Тонпа
+                time ДАТА: 10 ЖОВТНЯ 2016
+            section
+                +tex.
+                    Мова програмування $\mathbf{Bob}$ — це внутрішня мова симетричних моноїдальних категорій,
+                    що реалізує паралельні обчислення через взаємодію комбінаторів (ζ, δ, ε) з правилами
+                    анігіляції та комутації, придатна для моделювання лінійних і паралельних систем.
+
+        .semantics
+            section
+                h2#ast Синтаксис
+                +tex.
+                    Терми $\mathbf{Bob}$ складаються зі змінних, комбінаторів (Con, Dup, Era), пар, обміну (Swap),
+                    зв’язування (Let) та одиниці (Unit). Мова підтримує афінну логіку, забороняючи повторне використання змінних.
+                code.
+                    I = #identifier
+                    BOB = I | Con BOB  | Dup BOB | Era BOB
+                            | Pair (BOB, BOB)    | Unit
+                            | Let (I, BOB, BOB)  | Swap BOB
+                br.
+                code('OCaml').
+                    type term =
+                        | Var of string
+                        | Con of term
+                        | Dup of term
+                        | Era of term
+                        | Pair of term * term
+                        | Swap of term
+                        | Let of string * term * term
+                        | Unit
+                br.
+
+                h2#rules Правила обчислень
+                +tex.
+                    Обчислення в $\mathbf{Bob}$ базуються на правилах анігіляції (знищення) та комутації (перестановки),
+                    що моделюють взаємодію комбінаторів у симетричних моноїдальних категоріях.
+                code.
+                    Con (Con x) → Pair (x, x)          (* ζ-ζ анігіляція: два дроти *)
+                    Dup (Dup x) → Pair (x, x)          (* δ-δ анігіляція: два дроти *)
+                    Era (Era x) → Unit                 (* ε-ε анігіляція: порожня мережа *)
+                    Con (Dup x) → Dup (Con x)          (* ζ-δ комутація: перестановка *)
+                    Con (Era x) → Pair (Era x, Era x)  (* ζ-ε комутація: два ε вузли *)
+                    Dup (Era x) → Pair (Era x, Era x)  (* δ-ε комутація: два ε вузли *)
+                    Swap (Pair (t, u)) → Pair (u, t)   (* δ-ζ комутація: обмін портів *)
+                    Let (x, t, u) → subst x t u        (* Підстановка *)
+                br.
+                +tex(true).
+                    $$
+                    \begin{equation}
+                    \tag{ζ-ζ annihilation}
+                    \dfrac
+                    {\zeta (\zeta (x))}
+                    {(x, x)}
+                    \end{equation}
+                    $$
+                +tex(true).
+                    $$
+                    \begin{equation}
+                    \tag{δ-δ annihilation}
+                    \dfrac
+                    {\delta (\delta (x))}
+                    {(x, x)}
+                    \end{equation}
+                    $$
+                +tex(true).
+                    $$
+                    \begin{equation}
+                    \tag{ε-ε annihilation}
+                    \dfrac
+                    {\varepsilon (\varepsilon (x))}
+                    {\mathbf{1}}
+                    \end{equation}
+                    $$
+
+                h2#ast Синтаксис
+                +tex.
+                    Терми $\mathbf{Bob}$ кодуються як алгебраїчний тип даних у мові OCaml, з підтримкою паралельної оцінки через Domainslib.
+                code.
+                    type term =
+                        | Var of string
+                        | Con of term
+                        | Dup of term
+                        | Era of term
+                        | Pair of term * term
+                        | Swap of term
+                        | Let of string * term * term
+                        | Unit
+                br.
+
+                h2 Підстановка
+                +tex.
+                    Підстановка в $\mathbf{Bob}$ дотримується афінної логіки, забороняючи повторне використання змінних.
+                code.
+                    let rec subst env var term = function
+                        | Var v ->
+                            if v = var then
+                                if is_bound var env then failwith "Affine violation: variable used twice"
+                                else term
+                            else Var v
+                        | Con t -> Con (subst env var term t)
+                        | Dup t -> Dup (subst env var term t)
+                        | Era t -> Era (subst env var term t)
+                        | Pair (t, u) -> Pair (subst env var term t, subst env var term u)
+                        | Swap t -> Swap (subst env var term t)
+                        | Let (x, t1, t2) ->
+                            let t1' = subst env var term t1 in
+                            if x = var then Let (x, t1', t2)
+                            else Let (x, t1', subst env var term t2)
+                        | Unit -> Unit
+                br.
+
+                h2 Редукція
+                +tex.
+                    Редукція виконує правила анігіляції та комутації для активних пар.
+                code.
+                    let reduce env term =
+                        match term with
+                        | Con (Con x) -> Pair (x, x)           (* ζ-ζ анігіляція *)
+                        | Dup (Dup x) -> Pair (x, x)           (* δ-δ анігіляція *)
+                        | Era (Era x) -> Unit                  (* ε-ε анігіляція *)
+                        | Con (Dup x) -> Dup (Con x)           (* ζ-δ комутація *)
+                        | Con (Era x) -> Pair (Era x, Era x)   (* ζ-ε комутація *)
+                        | Dup (Era x) -> Pair (Era x, Era x)   (* δ-ε комутація *)
+                        | Swap (Pair (t, u)) -> Pair (u, t)    (* δ-ζ комутація *)
+                        | Let (x, t, u) -> subst env x t u     (* Підстановка *)
+                        | _ -> term
+                br.
+
+                h2 Пошук активних пар
+                +tex.
+                    Пошук усіх редукованих підтермів (активних пар) для паралельної оцінки.
+                code.
+                    let rec find_redexes env term acc =
+                        match term with
+                        | Con (Con x) -> (term, Pair (x, x)) :: acc
+                        | Dup (Dup x) -> (term, Pair (x, x)) :: acc
+                        | Era (Era x) -> (term, Unit) :: acc
+                        | Con (Dup x) -> (term, Dup (Con x)) :: acc
+                        | Con (Era x) -> (term, Pair (Era x, Era x)) :: acc
+                        | Dup (Era x) -> (term, Pair (Era x, Era x)) :: acc
+                        | Swap (Pair (t, u)) -> (term, Pair (u, t)) :: acc
+                        | Let (x, t, u) -> (term, subst env x t u) :: find_redexes env t (find_redexes env u acc)
+                        | Con t ->
+                            (match t with
+                             | Dup _ | Era _ -> acc
+                             | Con x -> find_redexes env t ((term, reduce env term) :: acc)
+                             | _ -> find_redexes env t acc)
+                        | Dup t -> find_redexes env t acc
+                        | Era t -> find_redexes env t acc
+                        | Pair (t, u) ->
+                            let acc' = find_redexes env t acc in
+                            find_redexes env u acc'
+                        | Swap t -> find_redexes env t acc
+                        | Var _ | Unit -> acc
+                br.
+
+                h2 Паралельна оцінка
+                +tex.
+                    Паралельна оцінка використовує бібліотеку Domainslib для одночасної обробки активних пар.
+                code.
+                    let eval_parallel pool env term =
+                        let rec loop term =
+                            let redexes = find_redexes env term [] in
+                            if redexes = [] then term
+                            else
+                                let new_term = Task.run pool (fun () ->
+                                    List.fold_left
+                                        (fun acc (old_t, new_t) -> replace_subterm old_t new_t acc)
+                                        term redexes
+                                ) in
+                                loop new_term
+                        in
+                        loop term
+                br.
+
+            section
+                h1 Бібліографія
+                +tex.
+                    [1]. <a href="https://lipn.univ-paris13.fr/~mazza/papers/CombSem-MSCS.pdf">Семантика комбінаторів взаємодії</a><br>
+                    [2]. <a href="https://github.com/HigherOrderCO/ICVM/">Референтна імплементація ICVM</a><br>
+
+include footer
