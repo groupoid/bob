@@ -1,4 +1,14 @@
-(* Terms of Interaction Calculus *)
+(*
+   Synonymical Names:
+
+   * Interaction Networks Calculus
+   * Linear Symmetric Interaction Combinators
+   * Internal Parallel Language of Symmetric Monoidal Categories
+
+   Semantics: https://lipn.univ-paris13.fr/~mazza/papers/CombSem-MSCS.pdf
+   Reference Implementation: https://github.com/HigherOrderCO/ICVM/
+*)
+
 type term =
   | Var of string
   | Con of term
@@ -7,16 +17,11 @@ type term =
   | Pair of term * term
   | Swap of term
   | Let of string * term * term
-  | Unit (* Represents the empty net for ε-ε *)
+  | Unit
 
-(* Environment for variable bindings *)
 type env = (string * term) list
+let rec is_bound var env = List.exists (fun (v, _) -> v = var) env
 
-(* Check if a variable is bound *)
-let rec is_bound var env =
-  List.exists (fun (v, _) -> v = var) env
-
-(* Substitute a term for a variable, ensuring affine usage *)
 let rec subst env var term = function
   | Var v ->
       if v = var then
@@ -34,16 +39,15 @@ let rec subst env var term = function
       else Let (x, t1', subst env var term t2)
   | Unit -> Unit
 
-(* Helper function to apply reduction *)
 let reduce env term =
   match term with
   | Con (Con x) -> Pair (x, x)           (* ζ-ζ annihilation: two wires *)
   | Dup (Dup x) -> Pair (x, x)           (* δ-δ annihilation: two wires *)
   | Era (Era x) -> Unit                  (* ε-ε annihilation: empty net *)
-  | Con (Dup x) -> Dup (Con x)           (* ζ-δ commutation: reorder *)
-  | Con (Era x) -> Pair (Era x, Era x)   (* ζ-ε commutation: two ε cells *)
-  | Dup (Era x) -> Pair (Era x, Era x)   (* δ-ε commutation: two ε cells *)
-  | Swap (Pair (t, u)) -> Pair (u, t)    (* δ-ζ commutation: port swap *)
+  | Con (Dup x) -> Dup (Con x)           (* ζ-δ commutation:  reorder *)
+  | Con (Era x) -> Pair (Era x, Era x)   (* ζ-ε commutation:  two ε cells *)
+  | Dup (Era x) -> Pair (Era x, Era x)   (* δ-ε commutation:  two ε cells *)
+  | Swap (Pair (t, u)) -> Pair (u, t)    (* δ-ζ commutation:  port swap *)
   | Let (x, t, u) -> subst env x t u     (* Substitution *)
   | _ -> term
 
