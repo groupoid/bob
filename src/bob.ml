@@ -7,6 +7,9 @@
 
    Semantics: https://lipn.univ-paris13.fr/~mazza/papers/CombSem-MSCS.pdf
    Reference Implementation: https://github.com/HigherOrderCO/ICVM/
+
+   $ opam install domainslib
+   $ ocamlfind ocamlopt -thread -package domainslib -linkpkg -o bob bob.ml
 *)
 
 type term =
