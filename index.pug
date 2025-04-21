@@ -190,6 +190,43 @@ block content
                         loop term
                 br.
 
+                h2 Внутрішня мова СМК
+                +tex.
+                    Доведення, що представлена мова $\mathbf{Bob}$ є внутрішньою мовою
+                    симетричних моноїдальних категорій:
+                +tex(true).
+                    $$
+                    \begin{cases}
+                       \mathrm{Let} : A \to C (u \cdot t, t: A \to B, u: B \to C), \\
+                       \mathrm{Pair} : A \rightarrow B \rightarrow A \otimes B, \\
+                       \mathrm{Swap} : A \otimes B \rightarrow B \otimes A, \\
+                       \mathrm{Con} : A \otimes A \rightarrow A, \\
+                       \mathrm{Dup} : A \rightarrow A \otimes A, \\
+                       \mathrm{Era} : A \rightarrow \mathbf{1}, \\
+                       \mathrm{Var} : A, \\
+                       \mathrm{Unit} : \mathbf{1}.
+                    \end{cases}
+                    $$
+                +tex.
+                    Ці конструктори відповідають аксіомам СМК:
+                +tex.
+                    $\mathrm{Pair}$ моделює тензорний добуток $\otimes$, комбінуючи морфізми паралельно,
+                    $\mathrm{Swap}$ реалізує симетрію $\sigma_{A,B}$, задовольняючи умову $\sigma_{B,A} \circ \sigma_{A,B} = \mathrm{id}_{A \otimes B}$,
+                    $\mathrm{Unit}$ є одиничним об'єктом $I$, для якого $A \otimes I \cong A$,
+                    $\mathrm{Let}$ моделює композицію морфізмів, забезпечуючи асоціативність,
+                    $\mathrm{Dup}$ та $\mathrm{Era}$ утворюють структуру комоноїда $\Delta: A \to A \otimes A, \epsilon: A \to I$,
+                    $\mathrm{Con}$ діє як контракція, подібна до множення моноїда, доповнюючи $\mathrm{Dup}$,
+                    $\mathrm{Var}$ позначає об'єкти категорії.
+                +tex.
+                    Лямбда функція і її аплікація в цьому численні визначаються так:
+                +tex(true).
+                    $$
+                    \begin{cases}
+                      \lambda x.t \vdash \mathrm{Con}(\mathrm{Let}(x,\mathrm{Var}(x),t)), \\
+                       t u \mapsto \mathrm{Con}(\mathrm{Pair}(t,u)). \\
+                    \end{cases}
+                    $$
+
             section
                 h1 Бібліографія
                 +tex.
